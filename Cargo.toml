@@ -1,0 +1,22 @@
+[package]
+name = "starlink-exporter"
+version = "0.4.1"
+authors = ["Elias Wilken <elias@wlkn.io>"]
+edition = "2018"
+description = "Prometheus exporter for the metrics exposed by the gRPC endpoint of the SpaceX Starlink user terminal"
+readme = "README.md"
+repository = "https://github.com/ewilken/starlink-exporter"
+license = "MIT/Apache-2.0"
+keywords = ["spacex", "starlink", "prometheus"]
+
+[dependencies]
+dotenv = "0.15"
+prometheus = "0.13"
+starlink = "0.3"
+thiserror = "1.0"
+tokio = { version = "1.5", features = ["rt-multi-thread", "time"] }
+tonic = "0.8"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+chrono = "0.4"
+warp = "0.3"
