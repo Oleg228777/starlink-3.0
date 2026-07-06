@@ -141,7 +141,7 @@ async fn reconnect_to_starlink() -> bool {
     }
 }
 
-async fn wifi_monitor_task(starlink_address: String) {
+async fn wifi_monitor_task(_starlink_address: String) {
     let wifi_check_interval = Duration::from_secs(10);
     
     loop {
