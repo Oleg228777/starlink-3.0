@@ -243,7 +243,7 @@ async fn main() -> Result<(), Error> {
     info!("Program will maintain Starlink WiFi connection and log all metrics");
 
     loop {
-        let metrics_lock = metrics.lock().await;
+        let mut metrics_lock = metrics.lock().await;
         
         match metrics_lock.update(starlink_address.clone()).await {
             Ok(_) => {
