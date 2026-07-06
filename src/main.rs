@@ -121,6 +121,7 @@ async fn reconnect_to_starlink() -> bool {
         }
         
         info!("Waiting for connection to establish...");
+        
         loop {
             sleep(Duration::from_secs(2)).await;
             
@@ -138,6 +139,7 @@ async fn reconnect_to_starlink() -> bool {
             
             info!("Still waiting for WiFi connection to Starlink...");
         }
+        warn!("Restarting WiFi reconnection process from beginning...");
     }
 }
 
@@ -172,7 +174,7 @@ async fn main() -> Result<(), Error> {
     info!("Initial WiFi check...");
     
     if !is_connected_to_starlink_wifi() {
-        warn!("Not connected to Starlink WiFi. Starting search and connection process...");
+        warn!("Not connected to Starlink WiFi. Starting continuous reconnection attempts...");
         reconnect_to_starlink().await;
     }
 
@@ -241,7 +243,7 @@ async fn main() -> Result<(), Error> {
     info!("Program will maintain Starlink WiFi connection and log all metrics");
 
     loop {
-        let mut metrics_lock = metrics.lock().await;
+        let metrics_lock = metrics.lock().await;
         
         match metrics_lock.update(starlink_address.clone()).await {
             Ok(_) => {
@@ -259,6 +261,8 @@ async fn main() -> Result<(), Error> {
                         info!("Metrics logged at {}", Local::now().format("%H:%M:%S"));
                     }
                 }
+                
+                drop(metrics_lock);
             }
             Err(e) => {
                 error!("Connection to Starlink device LOST: {}", e);
@@ -270,14 +274,12 @@ async fn main() -> Result<(), Error> {
                     error!("Failed to write error to log: {}", write_err);
                 }
                 
+                drop(metrics_lock);
+                
                 if !is_connected_to_starlink_wifi() {
                     warn!("WiFi connection to Starlink also lost. Initiating WiFi recovery...");
-                    drop(metrics_lock);
                     reconnect_to_starlink().await;
-                    metrics_lock = metrics.lock().await;
                 }
-                
-                drop(metrics_lock);
                 
                 info!("Attempting to reconnect to Starlink device...");
                 loop {
@@ -317,7 +319,6 @@ async fn main() -> Result<(), Error> {
             }
         }
 
-        drop(metrics_lock);
         sleep(Duration::from_secs(5)).await;
     }
 }
